@@ -1,0 +1,17 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+node_modules/
+.next/
+coverage/
+reports/
+artifacts/
+__pycache__/
+*.py[cod]
+.venv/
+bin/
+*.log
+playwright-report/
+test-results/
+learner-work/

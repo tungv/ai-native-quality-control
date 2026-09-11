@@ -1,0 +1,51 @@
+name: ai-native-quality-control
+services:
+  lab:
+    build:
+      context: .
+      target: lab
+    profiles: [tools]
+    working_dir: /workspace
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    volumes:
+      - .:/workspace
+    # The suite starts its own temporary loopback services. No network access
+    # or host Docker socket is needed after the image has been built.
+    network_mode: none
+    init: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+
+  api:
+    build:
+      context: .
+      target: api
+    environment:
+      LISTEN_ADDR: 0.0.0.0:8080
+      LAB_SCENARIO: "${LAB_SCENARIO:-baseline}"
+    ports:
+      - "127.0.0.1:${API_PORT:-8080}:8080"
+    read_only: true
+    init: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+
+  db:
+    image: pgvector/pgvector:0.8.6-pg17@sha256:cf134a767f474095eeba57e0117be8e568e011a63f33fbf252f14c9b760f8e6f
+    environment:
+      POSTGRES_USER: learner
+      POSTGRES_PASSWORD: local-lab-only
+      POSTGRES_DB: playground
+    # No published port: queries run through docker compose exec.
+    # This training data disappears when the container is removed.
+    tmpfs:
+      - /var/lib/postgresql/data
+    volumes:
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/001-seed.sql:ro
+      - ./db:/lab:ro
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -h 127.0.0.1 -U learner -d playground"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 5s
