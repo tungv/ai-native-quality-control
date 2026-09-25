@@ -1,5 +1,5 @@
 # The lab includes the native toolchain; learners only need Docker on the host.
-FROM golang:1.27.1-bookworm@sha256:648f440f42a0958804efb24df176f806f9d353b41f1c0627f666428e40310f6b AS toolchain
+FROM golang:1.27.1-bookworm@sha256:69a7b9788769bec032d238959b61854e9ae87f57be9029ec04e9885fabf99195 AS toolchain
 
 # gcc enables Go's race detector. Package versions follow Debian's security
 # repository; base-image digests are pinned, but apt packages are not frozen.
